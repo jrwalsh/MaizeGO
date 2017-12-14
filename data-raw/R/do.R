@@ -69,6 +69,8 @@ MaizeGO$evCode[MaizeGO$evCode == "RCA"] <- "COMP"
 ## Save the output to /data
 devtools::use_data(MaizeGO, overwrite = TRUE)
 
+devtools::document(roclets=c('rd', 'collate', 'namespace'))
+
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)
 detach("package:dplyr", unload=TRUE)

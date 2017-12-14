@@ -3,7 +3,7 @@ Type: Package
 Title: Container for Maize GO Annotation Data
 Version: 0.1.0
 Author: Jesse R. Walsh
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: Jesse R. Walsh <jesse@iastate.edu>
 Description: This is a collection of manually curated GO annotations for maize.  They have been
 	pulled from various sources, cleaned, and merged here.  This package uses readr, readxl, tidyr, and dplyr.
 License: LGPL

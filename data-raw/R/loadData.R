@@ -1,5 +1,3 @@
-library(readr)
-library(readxl)
 ####################################################################################################
 ## Project:         maize.data.go
 ## Script purpose:  Import datafiles relevant to this project
@@ -21,6 +19,8 @@ library(readxl)
 ## Date: 2017-12-11
 ## Author: Jesse R. Walsh
 ####################################################################################################
+library(readr)
+library(readxl)
 
 ## Read in GO Annotation data from MaizeCyc 2.2
 go.maizecyc.raw <- read_excel("./data-raw/preliminary GO terms to transfer to corncyc8.xlsx", sheet = "EV-EXP GO Annotations")
