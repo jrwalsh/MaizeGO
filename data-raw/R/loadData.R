@@ -23,7 +23,9 @@ library(readr)
 library(readxl)
 
 ## Read in GO Annotation data from MaizeCyc 2.2
-go.maizecyc.raw <- read_excel("./data-raw/preliminary GO terms to transfer to corncyc8.xlsx", sheet = "EV-EXP GO Annotations")
+go.maizecyc.raw.1 <- read_excel("./data-raw/preliminary GO terms to transfer to corncyc8.xlsx", sheet = "EV-EXP GO Annotations")
+go.maizecyc.raw.2 <- read_excel("./data-raw/preliminary GO terms to transfer to corncyc8.xlsx", sheet = "EV-COMP GO Annotations")
+go.maizecyc.raw.3 <- read_excel("./data-raw/preliminary GO terms to transfer to corncyc8.xlsx", sheet = "Not Exist in CornCyc8")
 
 ## Read in GO Annotation data from Gold Standard Set
 go.gold.raw <- read_delim("./data-raw/maize_v3.gold.gaf", "\t", escape_double = FALSE, trim_ws = TRUE, skip = 1)

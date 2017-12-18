@@ -9,7 +9,12 @@
 #'
 #' @format A data frame with 3209 rows and 6 variables:
 #' \describe{
-#'   \item{type}{GO Annotation Data}
-#'   \item{organism}{Zea mays}
+#'   \item{geneID}{geneID}
+#'   \item{goTerm}{goTerm}
+#'   \item{publication}{publication}
+#'   \item{evCode}{evCode}
+#'   \item{curator}{curator}
+#'   \item{source}{source}
+#'   \item{type}{type}
 #' }
 "MaizeGO"

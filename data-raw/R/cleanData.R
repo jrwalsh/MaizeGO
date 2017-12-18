@@ -35,12 +35,18 @@ library(dplyr)
 #==================================================================================================#
 ## go.maize.raw
 #--------------------------------------------------------------------------------------------------#
+## Combine all three sheets
+go.maizecyc.raw <-
+  go.maizecyc.raw.1 %>%
+  bind_rows(go.maizecyc.raw.2) %>%
+  bind_rows(go.maizecyc.raw.3)
+
 go.maize.clean <- go.maizecyc.raw
 
 ## Rename columns
 go.maize.clean <-
   go.maize.clean %>%
-  rename(geneID = V4_ID) %>%
+  rename(geneID = `MaizeCyc2.2 Accession-1`) %>%
   rename(goTerm = `GO Term`)
 
 ## Parse out citation string and select important columns
@@ -49,8 +55,9 @@ go.maize.clean <-
   select(geneID, goTerm, Citation) %>%
   separate(Citation, c("publication", "evCode","timeStamp","curator"), sep=":", extra="drop")
 
-## Publication is uncommon, replace blanks with NA's
+## Publication is uncommon, replace blanks with NA's, add PMID: to front of pubmed id
 go.maize.clean$publication[go.maize.clean$publication == ""] <- NA
+go.maize.clean$publication[!is.na(go.maize.clean$publication)] <- paste0("PMID:", go.maize.clean$publication[!is.na(go.maize.clean$publication)])
 
 ## Simplify evidence codes, assume missing is computationally derived.
 go.maize.clean$evCode[grepl("EV-EXP", go.maize.clean$evCode)] <- "EXP"
@@ -83,6 +90,9 @@ go.gold.clean <-
 go.gold.clean$evCode <- gsub("IEF", NA, go.gold.clean$evCode)
 go.gold.clean$evCode <- gsub("imp", "IMP", go.gold.clean$evCode)
 
+## Clean up publication column
+go.gold.clean$publication <- gsub("MGDB_REF:3133112\\|","",go.gold.clean$publication)
+
 ## Remove duplicates
 go.gold.clean <- distinct(go.gold.clean)
 
@@ -101,6 +111,9 @@ go.2011.clean <-
 go.2011.clean <-
   go.2011.clean %>%
   subset(!is.na(geneID) & !is.na(goTerm) & startsWith(goTerm, "GO:"))
+
+## Add PMID: to front of pubmed id
+go.2011.clean$publication[!is.na(go.2011.clean$publication)] <- paste0("PMID:", go.2011.clean$publication[!is.na(go.2011.clean$publication)])
 
 ## Remove duplicates
 go.2011.clean <- distinct(go.2011.clean)
@@ -141,6 +154,10 @@ go.student.brittney.clean <-
   go.student.brittney.clean %>%
   subset(!is.na(geneID) & !startsWith(geneID, "None") & !is.na(goTerm))
 go.student.brittney.clean$curator <- NA
+
+## Add PMID: to front of pubmed id
+go.student.brittney.clean$publication[!is.na(go.student.brittney.clean$publication)] <-
+  paste0("PMID:", go.student.brittney.clean$publication[!is.na(go.student.brittney.clean$publication)])
 
 ## Remove duplicates
 go.student.brittney.clean <- distinct(go.student.brittney.clean)
@@ -232,6 +249,10 @@ go.student.miranda.clean <-
 go.student.miranda.clean <-
   go.student.miranda.clean %>%
   subset(!grepl(" ", goTerm))
+
+## Add PMID: to front of pubmed id
+go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)] <-
+  paste0("PMID:", go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)])
 
 #==================================================================================================#
 ## maize.genes.v3_to_v4_map.raw

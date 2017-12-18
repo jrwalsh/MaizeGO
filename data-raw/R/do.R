@@ -10,8 +10,10 @@
 ####################################################################################################
 source("./data-raw/R/loadData.R")
 source("./data-raw/R/cleanData.R")
+library(topGO)
 library(tidyr)
 library(dplyr)
+
 
 ## List of the go datasets to combine, tag them as source of info
 go.maize.clean$source <- "MaizeCyc"
@@ -66,6 +68,13 @@ MaizeGO$evCode[MaizeGO$evCode == "ISS"] <- "COMP"
 MaizeGO$evCode[MaizeGO$evCode == "ISM"] <- "COMP"
 MaizeGO$evCode[MaizeGO$evCode == "RCA"] <- "COMP"
 
+## Add type.  GO Terms are either CC, BP, or MF.  Terms without a type, type is set to NA
+MaizeGO$type <- ""
+MaizeGO$type[MaizeGO$goTerm %in% ls(GOMFTerm)] <- "MF"
+MaizeGO$type[MaizeGO$goTerm %in% ls(GOBPTerm)] <- "BP"
+MaizeGO$type[MaizeGO$goTerm %in% ls(GOCCTerm)] <- "CC"
+MaizeGO$type[MaizeGO$type == ""] <- NA
+
 ## Save the output to /data
 devtools::use_data(MaizeGO, overwrite = TRUE)
 
@@ -74,3 +83,4 @@ devtools::document(roclets=c('rd', 'collate', 'namespace'))
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)
 detach("package:dplyr", unload=TRUE)
+detach("package:topGO", unload=TRUE)
