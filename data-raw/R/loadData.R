@@ -50,12 +50,7 @@ go.student.miranda.raw.4 <- read_excel("./data-raw/Summary Table.xlsx",
 go.student.miranda.raw.5 <- read_excel("./data-raw/Summary Table.xlsx", sheet = "Jan15")
 
 #--------------------------------------------------------------------------------------------------#
-## ID Maps
-
-## Mapping data provided by Maggie, based on synteny from SynMap
-maize.genes.v3_to_v4_map.raw <- read_xlsx("./data-raw/MaizeGDB_v3_v4.genes.xlsx")
-
-## Mapping data provided by UniProt
+## ID Maps: Mapping data provided by UniProt
 maize.genes.uniprot_to_v4_map.raw <- read_delim("./data-raw/uniprot-all.tab", "\t", escape_double = FALSE, trim_ws = TRUE)
 
 #--------------------------------------------------------------------------------------------------#

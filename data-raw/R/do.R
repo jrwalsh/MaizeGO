@@ -25,18 +25,19 @@ go.student.miranda.clean$source <- "Student"
 
 ## Merge the go files using v3 ids so the ids can be converted
 go.maize.all <-
+  go.maize.clean %>%
   bind_rows(go.gold.clean) %>%
   bind_rows(go.2011.clean) %>%
   bind_rows(go.student.brittney.clean) %>%
   bind_rows(go.student.miranda.clean)
 
-## Convert to v4 ids
-go.maize.all <-
-  go.maize.all %>%
-  rename(id = geneID) %>%
-  inner_join(maize.genes.v3_to_v4_map.clean, by=c("id" = "v3_id")) %>%
-  rename(geneID = v4_id) %>%
-  select(geneID, goTerm, publication, evCode, curator, source)
+# ## Convert to v4 ids
+# go.maize.all <-
+#   go.maize.all %>%
+#   rename(id = geneID) %>%
+#   inner_join(maize.genes.v3_to_v4_map.clean, by=c("id" = "v3_id")) %>%
+#   rename(geneID = v4_id) %>%
+#   select(geneID, goTerm, publication, evCode, curator, source)
 
 ## Convert Uniprot to v4 ids
 go.uniprot.v4 <-
@@ -48,9 +49,10 @@ go.uniprot.v4 <-
 
 ## Generate GO master datasete
 MaizeGO <-
-  go.maize.clean %>%
+  # go.maize.clean
+  go.maize.all %>%
   bind_rows(go.uniprot.v4) %>%
-  bind_rows(go.maize.all) %>%
+  # bind_rows() %>%
   distinct()
 
 ## Simplify EV Codes based on uniprot definitions
@@ -75,8 +77,13 @@ MaizeGO$type[MaizeGO$goTerm %in% ls(GOBPTerm)] <- "BP"
 MaizeGO$type[MaizeGO$goTerm %in% ls(GOCCTerm)] <- "CC"
 MaizeGO$type[MaizeGO$type == ""] <- NA
 
+## Split v3 assigned and v4 assigned GO annotations (we don't do ID mapping here, that is for end-user to do)
+MaizeGO.v3 <- subset(MaizeGO, !startsWith(geneID, "Zm"))
+MaizeGO <- subset(MaizeGO, startsWith(geneID, "Zm"))
+
 ## Save the output to /data
 devtools::use_data(MaizeGO, overwrite = TRUE)
+devtools::use_data(MaizeGO.v3, overwrite = TRUE)
 
 devtools::document(roclets=c('rd', 'collate', 'namespace'))
 

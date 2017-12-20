@@ -13,7 +13,6 @@
 ##        go.student.miranda.raw.3
 ##        go.student.miranda.raw.4
 ##        go.student.miranda.raw.5
-##        maize.genes.v3_to_v4_map.raw
 ##        maize.genes.uniprot_to_v4_map.raw
 ##
 ## Output:
@@ -23,7 +22,6 @@
 ##        go.uniprot.clean
 ##        go.student.brittney.clean
 ##        go.student.miranda.clean
-##        maize.genes.v3_to_v4_map.clean
 ##        maize.genes.uniprot_to_v4_map.clean
 ##
 ## Date: 2017-12-11
@@ -89,6 +87,7 @@ go.gold.clean <-
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
 go.gold.clean$evCode <- gsub("IEF", NA, go.gold.clean$evCode)
 go.gold.clean$evCode <- gsub("imp", "IMP", go.gold.clean$evCode)
+go.gold.clean <- subset(go.gold.clean, !grepl("PyrR", geneID) & !grepl("ga-ms1", geneID))
 
 ## Clean up publication column
 go.gold.clean$publication <- gsub("MGDB_REF:3133112\\|","",go.gold.clean$publication)
@@ -152,7 +151,14 @@ go.student.brittney.clean <-
 ## Remove unusable lines, add a default curator
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
-  subset(!is.na(geneID) & !startsWith(geneID, "None") & !is.na(goTerm))
+  subset(!is.na(geneID) &
+           !grepl("none", geneID) &
+           !startsWith(geneID, "??") &
+           !startsWith(geneID, "None") &
+           !is.na(goTerm))
+go.student.brittney.clean$geneID <- gsub("GMRMZM","GRMZM",go.student.brittney.clean$geneID)
+go.student.brittney.clean$geneID <- gsub("GMZM","GRMZM",go.student.brittney.clean$geneID)
+go.student.brittney.clean$geneID <- gsub("GRMZM20","GRMZM2G0",go.student.brittney.clean$geneID)
 go.student.brittney.clean$curator <- NA
 
 ## Add PMID: to front of pubmed id
@@ -253,30 +259,6 @@ go.student.miranda.clean <-
 ## Add PMID: to front of pubmed id
 go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)] <-
   paste0("PMID:", go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)])
-
-#==================================================================================================#
-## maize.genes.v3_to_v4_map.raw
-#--------------------------------------------------------------------------------------------------#
-maize.genes.v3_to_v4_map.clean <- maize.genes.v3_to_v4_map.raw
-
-maize.genes.v3_to_v4_map.clean <-
-  maize.genes.v3_to_v4_map.clean %>%
-  rename(v3_id = `v3 gene ID`, v4_id = `v4 gene ID (if present)`) %>%
-  select(v3_id, v4_id)
-
-maize.genes.v3_to_v4_map.clean$v3_id[maize.genes.v3_to_v4_map.clean$v3_id == "na"] <- NA
-maize.genes.v3_to_v4_map.clean$v4_id[maize.genes.v3_to_v4_map.clean$v4_id == "na"] <- NA
-
-maize.genes.v3_to_v4_map.clean$v3_id[startsWith(maize.genes.v3_to_v4_map.clean$v3_id, "AF")] <- NA
-maize.genes.v3_to_v4_map.clean$v3_id[startsWith(maize.genes.v3_to_v4_map.clean$v3_id, "AY")] <- NA
-maize.genes.v3_to_v4_map.clean$v3_id[startsWith(maize.genes.v3_to_v4_map.clean$v3_id, "EF")] <- NA
-maize.genes.v3_to_v4_map.clean$v3_id[startsWith(maize.genes.v3_to_v4_map.clean$v3_id, "zma")] <- NA
-maize.genes.v3_to_v4_map.clean$v4_id[startsWith(maize.genes.v3_to_v4_map.clean$v4_id, "zma")] <- NA
-maize.genes.v3_to_v4_map.clean$v4_id[maize.genes.v3_to_v4_map.clean$v4_id == "not in v4"] <- NA
-
-maize.genes.v3_to_v4_map.clean <-
-  maize.genes.v3_to_v4_map.clean %>%
-  filter(!is.na(v3_id) & !is.na(v4_id))
 
 #==================================================================================================#
 ## maize.genes.uniprot_to_v4_map.raw
