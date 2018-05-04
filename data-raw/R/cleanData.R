@@ -91,6 +91,7 @@ go.gold.clean <- subset(go.gold.clean, !grepl("PyrR", geneID) & !grepl("ga-ms1",
 
 ## Clean up publication column
 go.gold.clean$publication <- gsub("MGDB_REF:3133112\\|","",go.gold.clean$publication)
+go.gold.clean$publication[startsWith(go.gold.clean$publication, "Maize")] <- NA
 
 ## Remove duplicates
 go.gold.clean <- distinct(go.gold.clean)
@@ -129,6 +130,15 @@ go.uniprot.clean <-
   rename(geneID = `GENE PRODUCT ID`, goTerm = `GO TERM`, publication = REFERENCE, evCode = `GO EVIDENCE CODE`, curator = `ASSIGNED BY`) %>%
   select(geneID, goTerm, publication, evCode, curator)
 
+## Clean non-standard publication data
+go.uniprot.clean$publication[startsWith(go.uniprot.clean$publication, "GO_REF")] <- NA
+
+## Remove unusable lines (no GOterm = assume COMP later, no pub is OK)
+go.uniprot.clean <-
+  go.uniprot.clean %>%
+  subset(!is.na(goTerm) &
+         !is.na(geneID)) # no geneID/evCode = not usable
+
 ## Remove duplicates
 go.uniprot.clean <- distinct(go.uniprot.clean)
 
@@ -145,30 +155,48 @@ go.student.brittney.clean <- go.student.brittney.raw
 ## Rename columns and select important columns
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `EVIDENCE CODE`) %>%
-  select(geneID, goTerm, publication, evCode)
+  rename(geneID = `Gene Model`, gene = `Canonical Gene`, goTerm = `better GO`, publication = PMID, evCode = `e code`) %>%
+  rename_at( 11, ~"withGene" ) %>%
+  select(geneID, gene, goTerm, publication, evCode, withGene)
 
-## Remove unusable lines, add a default curator
+## Clean non-standard "NA's" from data in geneID and other typos
+go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("None", "none", "noe")] <- NA
+go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GRMZM2G0050214")] <- "GRMZM2G005024"
+go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GRMZM2036340")] <- "GRMZM2G036340"
+go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GMZM5G870341")] <- "GRMZM2G032282"
+go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GMZM5G870340")] <- "GRMZM5G870342" # cpx1 is nec4
+go.student.brittney.clean$evCode[go.student.brittney.clean$evCode %in% c("AF360356")] <- NA
+go.student.brittney.clean$publication[go.student.brittney.clean$publication %in% c("MGDB: 514917")] <- "11708651"
+
+## Hard-coded fix for missing geneID but present gene.  Manually resolve to a geneID
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("phyB1")] <- "GRMZM2G124532"
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("phyB2")] <- "GRMZM2G092174"
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("pet3")] <- "GRMZM2G177145"
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("p")] <- "GRMZM2G084799" # presume this to mean gene p1
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("r1")] <- "GRMZM5G822829"
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("ns2")] <- "Zm00001d052598" # review special issue with double naming (aka wox3B gene)
+go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("Abph2")] <- NA # no gene model associated with this gene
+
+## Remove unusable lines, add a default curator (no GOterm = assume COMP later, no pub is OK)
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
-  subset(!is.na(geneID) &
-           !grepl("none", geneID) &
-           !startsWith(geneID, "??") &
-           !startsWith(geneID, "None") &
-           !is.na(goTerm))
-go.student.brittney.clean$geneID <- gsub("GMRMZM","GRMZM",go.student.brittney.clean$geneID)
-go.student.brittney.clean$geneID <- gsub("GMZM","GRMZM",go.student.brittney.clean$geneID)
-go.student.brittney.clean$geneID <- gsub("GRMZM20","GRMZM2G0",go.student.brittney.clean$geneID)
+  subset(!is.na(goTerm) &
+           !is.na(geneID)) # no geneID/evCode = not usable
+
+## Add curator column with default value
 go.student.brittney.clean$curator <- NA
 
 ## Add PMID: to front of pubmed id
 go.student.brittney.clean$publication[!is.na(go.student.brittney.clean$publication)] <-
   paste0("PMID:", go.student.brittney.clean$publication[!is.na(go.student.brittney.clean$publication)])
 
-## Remove duplicates
-go.student.brittney.clean <- distinct(go.student.brittney.clean)
+## Select columns and remove duplicates
+go.student.brittney.clean <-
+  go.student.brittney.clean %>%
+  select(geneID, goTerm, publication, evCode, curator) %>%
+  distinct() # no duplicates expected
 
-#--#
+#--#    #--#    #--#    #--#    #--#    #--#    #--#    #--#    #--#    #--#
 go.student.miranda.raw <- go.student.miranda.raw.1
 
 ## This data is on 5 sheets that are not consistently formatted
@@ -255,28 +283,29 @@ go.student.miranda.clean <-
 go.student.miranda.clean <-
   go.student.miranda.clean %>%
   subset(!grepl(" ", goTerm))
+go.student.miranda.clean$publication[startsWith(go.student.miranda.clean$publication, "MGDB") | startsWith(go.student.miranda.clean$publication, "mgdb")] <- NA
 
 ## Add PMID: to front of pubmed id
 go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)] <-
   paste0("PMID:", go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)])
 
-#==================================================================================================#
-## maize.genes.uniprot_to_v4_map.raw
-#--------------------------------------------------------------------------------------------------#
-maize.genes.uniprot_to_v4_map.clean <- maize.genes.uniprot_to_v4_map.raw
-
-## Remove unmapped lines and rename columns
-maize.genes.uniprot_to_v4_map.clean <-
-  maize.genes.uniprot_to_v4_map.clean %>%
-  subset(!is.na(`Cross-reference (Gramene)`)) %>%
-  rename(UniProtID = Entry, v4_id = `Cross-reference (Gramene)`)
-
-## Extract the first ZM id from the list
-maize.genes.uniprot_to_v4_map.clean <-
-  maize.genes.uniprot_to_v4_map.clean %>%
-  mutate(v4_id = gsub("_.*", "", v4_id))
-
-## Leave duplicates in, as this has a 1 to many mapping we want to preserve.
+# #==================================================================================================#
+# ## maize.genes.uniprot_to_v4_map.raw
+# #--------------------------------------------------------------------------------------------------#
+# maize.genes.uniprot_to_v4_map.clean <- maize.genes.uniprot_to_v4_map.raw
+#
+# ## Remove unmapped lines and rename columns
+# maize.genes.uniprot_to_v4_map.clean <-
+#   maize.genes.uniprot_to_v4_map.clean %>%
+#   subset(!is.na(`Cross-reference (Gramene)`)) %>%
+#   rename(UniProtID = Entry, v4_id = `Cross-reference (Gramene)`)
+#
+# ## Extract the first ZM id from the list
+# maize.genes.uniprot_to_v4_map.clean <-
+#   maize.genes.uniprot_to_v4_map.clean %>%
+#   mutate(v4_id = gsub("_.*", "", v4_id))
+#
+# ## Leave duplicates in, as this has a 1 to many mapping we want to preserve.
 
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)

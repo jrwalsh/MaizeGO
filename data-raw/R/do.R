@@ -24,12 +24,13 @@ go.student.brittney.clean$source <- "Student"
 go.student.miranda.clean$source <- "Student"
 
 ## Merge the go files using v3 ids so the ids can be converted
-go.maize.all <-
+MaizeGO <-
   go.maize.clean %>%
   bind_rows(go.gold.clean) %>%
   bind_rows(go.2011.clean) %>%
   bind_rows(go.student.brittney.clean) %>%
-  bind_rows(go.student.miranda.clean)
+  bind_rows(go.student.miranda.clean) %>%
+  bind_rows(go.uniprot.clean)
 
 # ## Convert to v4 ids
 # go.maize.all <-
@@ -40,20 +41,20 @@ go.maize.all <-
 #   select(geneID, goTerm, publication, evCode, curator, source)
 
 ## Convert Uniprot to v4 ids
-go.uniprot.v4 <-
-  go.uniprot.clean %>%
-  rename(id = geneID) %>%
-  inner_join(maize.genes.uniprot_to_v4_map.clean, by=c("id" = "UniProtID")) %>%
-  rename(geneID = v4_id) %>%
-  select(geneID, goTerm, publication, evCode, curator, source)
+# go.uniprot.v4 <-
+#   go.uniprot.clean %>%
+#   rename(id = geneID) %>%
+#   inner_join(maize.genes.uniprot_to_v4_map.clean, by=c("id" = "UniProtID")) %>%
+#   rename(geneID = v4_id) %>%
+#   select(geneID, goTerm, publication, evCode, curator, source)
 
-## Generate GO master datasete
-MaizeGO <-
-  # go.maize.clean
-  go.maize.all %>%
-  bind_rows(go.uniprot.v4) %>%
-  # bind_rows() %>%
-  distinct()
+# ## Generate GO master datasete
+# MaizeGO <-
+#   # go.maize.clean
+#   go.maize.all %>%
+#   # bind_rows(go.uniprot.v4) %>%
+#   # bind_rows() %>%
+#   distinct()
 
 ## Simplify EV Codes based on uniprot definitions
 MaizeGO$evCode[MaizeGO$evCode == "IDA"] <- "EXP"
@@ -77,9 +78,10 @@ MaizeGO$type[MaizeGO$goTerm %in% ls(GOBPTerm)] <- "BP"
 MaizeGO$type[MaizeGO$goTerm %in% ls(GOCCTerm)] <- "CC"
 MaizeGO$type[MaizeGO$type == ""] <- NA
 
-## Split v3 assigned and v4 assigned GO annotations (we don't do ID mapping here, that is for end-user to do)
-MaizeGO.v3 <- subset(MaizeGO, !startsWith(geneID, "Zm"))
-MaizeGO <- subset(MaizeGO, startsWith(geneID, "Zm"))
+## Split UniProt, v3 assigned, and v4 assigned GO annotations (we don't do ID mapping here, that is for end-user to do)
+MaizeGO.B73.Uniprot <- subset(MaizeGO, source %in% "UniProt")
+MaizeGO.B73.v3 <- subset(MaizeGO, !startsWith(geneID, "Zm") & !source %in% "UniProt")
+MaizeGO.B73.v4 <- subset(MaizeGO, startsWith(geneID, "Zm"))
 
 ## Save the output to /data
 devtools::use_data(MaizeGO, overwrite = TRUE)
