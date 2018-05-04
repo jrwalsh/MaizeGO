@@ -13,7 +13,6 @@
 ##        go.student.miranda.raw.3
 ##        go.student.miranda.raw.4
 ##        go.student.miranda.raw.5
-##        maize.genes.uniprot_to_v4_map.raw
 ##
 ## Output:
 ##        go.maizecyc.clean
@@ -22,7 +21,6 @@
 ##        go.uniprot.clean
 ##        go.student.brittney.clean
 ##        go.student.miranda.clean
-##        maize.genes.uniprot_to_v4_map.clean
 ##
 ## Date: 2017-12-11
 ## Author: Jesse R. Walsh
@@ -289,23 +287,6 @@ go.student.miranda.clean$publication[startsWith(go.student.miranda.clean$publica
 go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)] <-
   paste0("PMID:", go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)])
 
-# #==================================================================================================#
-# ## maize.genes.uniprot_to_v4_map.raw
-# #--------------------------------------------------------------------------------------------------#
-# maize.genes.uniprot_to_v4_map.clean <- maize.genes.uniprot_to_v4_map.raw
-#
-# ## Remove unmapped lines and rename columns
-# maize.genes.uniprot_to_v4_map.clean <-
-#   maize.genes.uniprot_to_v4_map.clean %>%
-#   subset(!is.na(`Cross-reference (Gramene)`)) %>%
-#   rename(UniProtID = Entry, v4_id = `Cross-reference (Gramene)`)
-#
-# ## Extract the first ZM id from the list
-# maize.genes.uniprot_to_v4_map.clean <-
-#   maize.genes.uniprot_to_v4_map.clean %>%
-#   mutate(v4_id = gsub("_.*", "", v4_id))
-#
-# ## Leave duplicates in, as this has a 1 to many mapping we want to preserve.
 
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)

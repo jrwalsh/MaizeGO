@@ -32,30 +32,6 @@ MaizeGO <-
   bind_rows(go.student.miranda.clean) %>%
   bind_rows(go.uniprot.clean)
 
-# ## Convert to v4 ids
-# go.maize.all <-
-#   go.maize.all %>%
-#   rename(id = geneID) %>%
-#   inner_join(maize.genes.v3_to_v4_map.clean, by=c("id" = "v3_id")) %>%
-#   rename(geneID = v4_id) %>%
-#   select(geneID, goTerm, publication, evCode, curator, source)
-
-## Convert Uniprot to v4 ids
-# go.uniprot.v4 <-
-#   go.uniprot.clean %>%
-#   rename(id = geneID) %>%
-#   inner_join(maize.genes.uniprot_to_v4_map.clean, by=c("id" = "UniProtID")) %>%
-#   rename(geneID = v4_id) %>%
-#   select(geneID, goTerm, publication, evCode, curator, source)
-
-# ## Generate GO master datasete
-# MaizeGO <-
-#   # go.maize.clean
-#   go.maize.all %>%
-#   # bind_rows(go.uniprot.v4) %>%
-#   # bind_rows() %>%
-#   distinct()
-
 ## Simplify EV Codes based on uniprot definitions
 MaizeGO$evCode[MaizeGO$evCode == "IDA"] <- "EXP"
 MaizeGO$evCode[MaizeGO$evCode == "IPI"] <- "EXP"
