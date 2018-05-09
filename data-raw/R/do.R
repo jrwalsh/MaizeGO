@@ -60,8 +60,9 @@ MaizeGO.B73.v3 <- subset(MaizeGO, !startsWith(geneID, "Zm") & !source %in% "UniP
 MaizeGO.B73.v4 <- subset(MaizeGO, startsWith(geneID, "Zm"))
 
 ## Save the output to /data
-devtools::use_data(MaizeGO, overwrite = TRUE)
-devtools::use_data(MaizeGO.v3, overwrite = TRUE)
+devtools::use_data(MaizeGO.B73.v3, overwrite = TRUE)
+devtools::use_data(MaizeGO.B73.v4, overwrite = TRUE)
+devtools::use_data(MaizeGO.B73.Uniprot, overwrite = TRUE)
 
 devtools::document(roclets=c('rd', 'collate', 'namespace'))
 

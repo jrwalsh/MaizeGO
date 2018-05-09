@@ -1,7 +1,7 @@
 Package: MaizeGO
 Type: Package
 Title: Container for Maize GO Annotation Data
-Version: 0.1.0
+Version: 0.2.0
 Author: Jesse R. Walsh
 Maintainer: Jesse R. Walsh <jesse@iastate.edu>
 Description: This is a collection of manually curated GO annotations for maize.  They have been
