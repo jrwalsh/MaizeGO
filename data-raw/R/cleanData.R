@@ -56,11 +56,26 @@ go.maize.clean$publication[go.maize.clean$publication == ""] <- NA
 go.maize.clean$publication[!is.na(go.maize.clean$publication)] <- paste0("PMID:", go.maize.clean$publication[!is.na(go.maize.clean$publication)])
 
 ## Simplify evidence codes, assume missing is computationally derived.
-go.maize.clean$evCode[grepl("EV-EXP", go.maize.clean$evCode)] <- "EXP"
-go.maize.clean$evCode[grepl("EV-AS", go.maize.clean$evCode)] <- "EXP" #trust author statements
-go.maize.clean$evCode[grepl("EV-IC", go.maize.clean$evCode)] <- "EXP" #trust curator inferences
-go.maize.clean$evCode[grepl("EV-COMP", go.maize.clean$evCode)] <- "COMP"
+go.maize.clean$evCodeType <- ""
+go.maize.clean$evCodeType[grepl("EV-EXP", go.maize.clean$evCode)] <- "EXP"
+go.maize.clean$evCodeType[grepl("EV-AS", go.maize.clean$evCode)] <- "EXP" #trust author statements
+go.maize.clean$evCodeType[grepl("EV-IC", go.maize.clean$evCode)] <- "EXP" #trust curator inferences
+go.maize.clean$evCodeType[grepl("EV-COMP", go.maize.clean$evCode)] <- "COMP"
+go.maize.clean$evCodeType[go.maize.clean$evCode == ""] <- "COMP"
+
 go.maize.clean$evCode[go.maize.clean$evCode == ""] <- "COMP"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-EXP")] <- "EXP"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-EXP-IDA")] <- "IDA"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-EXP-TAS")] <- "TAS"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-EXP-IMP")] <- "IMP"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-EXP-IPI")] <- "IPI"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-COMP")] <- "COMP"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-COMP-HINF-SEQ-ORTHOLOGY")] <- "HINF-SEQ-ORTHOLOGY"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-COMP-AINF-SEQ-ORTHOLOGY")] <- "AINF-SEQ-ORTHOLOGY"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-COMP-IBA")] <- "IBA"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-AS")] <- "TAS"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-AS-TAS")] <- "TAS"
+go.maize.clean$evCode[go.maize.clean$evCode %in% c("EV-IC")] <- "IC"
 
 ## Remove |'s from GO Terms
 go.maize.clean$goTerm <- gsub(go.maize.clean$goTerm, pattern = "\\|", replacement = "")
@@ -68,7 +83,7 @@ go.maize.clean$goTerm <- gsub(go.maize.clean$goTerm, pattern = "\\|", replacemen
 ## Remove duplicates and drop timestamp
 go.maize.clean <-
   go.maize.clean %>%
-  select(geneID, goTerm, publication, evCode, curator) %>%
+  select(geneID, goTerm, publication, evCode, curator, evCodeType) %>%
   distinct(go.maize.clean)
 
 #==================================================================================================#
@@ -85,7 +100,19 @@ go.gold.clean <-
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
 go.gold.clean$evCode <- gsub("IEF", NA, go.gold.clean$evCode)
 go.gold.clean$evCode <- gsub("imp", "IMP", go.gold.clean$evCode)
-go.gold.clean <- subset(go.gold.clean, !grepl("PyrR", geneID) & !grepl("ga-ms1", geneID))
+go.gold.clean$geneID[go.gold.clean$geneID %in% c("PyrR")] <- "GRMZM2G090068" #assume PyrR = pyrr1
+go.gold.clean <- subset(go.gold.clean, !grepl("ga-ms1", geneID)) #drop gams1, not associated with any gene model
+
+## Simplify evidence codes, assume missing is computationally derived.
+go.gold.clean$evCodeType <- ""
+go.gold.clean$evCodeType[is.na(go.gold.clean$evCode)] <- "COMP"
+go.gold.clean$evCodeType[go.gold.clean$evCode %in% c("IMP")] <- "EXP"
+go.gold.clean$evCodeType[go.gold.clean$evCode %in% c("IDA")] <- "EXP"
+go.gold.clean$evCodeType[go.gold.clean$evCode %in% c("IGI")] <- "EXP"
+go.gold.clean$evCodeType[go.gold.clean$evCode %in% c("IPI")] <- "EXP"
+go.gold.clean$evCodeType[go.gold.clean$evCode %in% c("IEP")] <- "EXP"
+
+go.gold.clean$evCode[is.na(go.gold.clean$evCode)] <- "COMP"
 
 ## Clean up publication column
 go.gold.clean$publication <- gsub("MGDB_REF:3133112\\|","",go.gold.clean$publication)
@@ -98,6 +125,12 @@ go.gold.clean <- distinct(go.gold.clean)
 ## go.2011.raw
 #--------------------------------------------------------------------------------------------------#
 go.2011.clean <- go.2011.raw
+
+## Clean up errors and missing
+go.2011.clean$X5[go.2011.clean$X4 %in% c("pebp8")] <- "GRMZM2G179264"
+go.2011.clean$X5[go.2011.clean$X4 %in% c("id1")] <- "GRMZM2G011357"
+go.2011.clean$X5[go.2011.clean$X4 %in% c("fl2")] <- "GRMZM2G397687"
+go.2011.clean$X5[go.2011.clean$X4 %in% c("ao3")] <- "GRMZM2G019799"
 
 ## Rename columns and select important columns
 go.2011.clean <-
@@ -112,6 +145,16 @@ go.2011.clean <-
 
 ## Add PMID: to front of pubmed id
 go.2011.clean$publication[!is.na(go.2011.clean$publication)] <- paste0("PMID:", go.2011.clean$publication[!is.na(go.2011.clean$publication)])
+
+## Simplify evidence codes, assume missing is computationally derived.
+go.2011.clean$evCodeType <- ""
+go.2011.clean$evCodeType[is.na(go.2011.clean$evCode)] <- "COMP"
+go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("IMP")] <- "EXP"
+go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("IDA")] <- "EXP"
+go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("IGI")] <- "EXP"
+go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("TAS")] <- "EXP" #trust author statements
+go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("IEP")] <- "EXP"
+go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("ISS")] <- "COMP"
 
 ## Remove duplicates
 go.2011.clean <- distinct(go.2011.clean)
@@ -131,11 +174,23 @@ go.uniprot.clean <-
 ## Clean non-standard publication data
 go.uniprot.clean$publication[startsWith(go.uniprot.clean$publication, "GO_REF")] <- NA
 
-## Remove unusable lines (no GOterm = assume COMP later, no pub is OK)
-go.uniprot.clean <-
-  go.uniprot.clean %>%
-  subset(!is.na(goTerm) &
-         !is.na(geneID)) # no geneID/evCode = not usable
+## Simplify evidence codes, assume missing is computationally derived and throw out "ND" (no data) statements
+go.uniprot.clean$evCodeType <- ""
+go.uniprot.clean$evCodeType[is.na(go.uniprot.clean$evCode)] <- "COMP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("IMP")] <- "EXP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("IDA")] <- "EXP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("IGI")] <- "EXP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("TAS")] <- "EXP" #trust author statements
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("NAS")] <- "EXP" #trust author statements
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("IC")] <- "EXP" #trust curator statements
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("IEP")] <- "EXP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("IPI")] <- "EXP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("ISS")] <- "COMP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("RCA")] <- "COMP"
+go.uniprot.clean$evCodeType[go.uniprot.clean$evCode %in% c("ISM")] <- "COMP"
+
+go.uniprot.clean$evCode[is.na(go.uniprot.clean$evCode)] <- "COMP"
+go.uniprot.clean <- go.uniprot.clean[!go.uniprot.clean$evCode %in% c("ND"),] #no data found, so toss it out
 
 ## Remove duplicates
 go.uniprot.clean <- distinct(go.uniprot.clean)
@@ -175,11 +230,11 @@ go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("r1")] <-
 go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("ns2")] <- "Zm00001d052598" # review special issue with double naming (aka wox3B gene)
 go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("Abph2")] <- NA # no gene model associated with this gene
 
-## Remove unusable lines, add a default curator (no GOterm = assume COMP later, no pub is OK)
+## Remove unusable lines, add a default curator (no evCode = assume COMP later, no pub is OK)
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
   subset(!is.na(goTerm) &
-           !is.na(geneID)) # no geneID/evCode = not usable
+           !is.na(geneID)) # no geneID/goTerm = not usable
 
 ## Add curator column with default value
 go.student.brittney.clean$curator <- NA
@@ -187,6 +242,16 @@ go.student.brittney.clean$curator <- NA
 ## Add PMID: to front of pubmed id
 go.student.brittney.clean$publication[!is.na(go.student.brittney.clean$publication)] <-
   paste0("PMID:", go.student.brittney.clean$publication[!is.na(go.student.brittney.clean$publication)])
+
+## Simplify evidence codes, assume missing is computationally derived and throw out "ND" (no data) statements
+go.student.brittney.clean$evCodeType <- ""
+go.student.brittney.clean$evCodeType[is.na(go.student.brittney.clean$evCode)] <- "COMP"
+go.student.brittney.clean$evCodeType[go.student.brittney.clean$evCode %in% c("IMP")] <- "EXP"
+go.student.brittney.clean$evCodeType[go.student.brittney.clean$evCode %in% c("IDA")] <- "EXP"
+go.student.brittney.clean$evCodeType[go.student.brittney.clean$evCode %in% c("IGI")] <- "EXP"
+go.student.brittney.clean$evCodeType[go.student.brittney.clean$evCode %in% c("IPI")] <- "EXP"
+
+go.student.brittney.clean$evCode[is.na(go.student.brittney.clean$evCode)] <- "COMP"
 
 ## Select columns and remove duplicates
 go.student.brittney.clean <-
@@ -228,7 +293,7 @@ go.student.miranda.clean <-
   go.student.miranda.clean %>%
   bind_rows(go.student.miranda.raw)
 
-## Sheet 4
+## Sheet 4 - no gene name in paper column
 go.student.miranda.raw <-
   go.student.miranda.raw.4 %>%
   rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`) %>%
