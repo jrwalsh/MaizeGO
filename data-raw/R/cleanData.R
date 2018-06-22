@@ -86,6 +86,10 @@ go.maize.clean <-
   select(geneID, goTerm, publication, evCode, curator, evCodeType) %>%
   distinct(go.maize.clean)
 
+## There was no qualifier or with columns for this dataset, but initiallize the empty anyway
+go.maize.clean$qualifier <- NA
+go.maize.clean$with <- NA
+
 #==================================================================================================#
 ## go.gold.raw
 #--------------------------------------------------------------------------------------------------#
@@ -95,7 +99,7 @@ go.gold.clean <- go.gold.raw
 go.gold.clean <-
   go.gold.clean %>%
   rename(geneID = db_object_symbol, goTerm = term_accession, publication = db_reference, evCode = evidence_code, curator = assigned_by) %>%
-  select(geneID, goTerm, publication, evCode, curator)
+  select(geneID, goTerm, publication, evCode, curator, qualifier, with)
 
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
 go.gold.clean$evCode <- gsub("IEF", NA, go.gold.clean$evCode)
@@ -120,6 +124,11 @@ go.gold.clean$publication[startsWith(go.gold.clean$publication, "Maize")] <- NA
 
 ## Remove duplicates
 go.gold.clean <- distinct(go.gold.clean)
+
+## Reorder columns
+go.gold.clean <-
+  go.gold.clean %>%
+  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with)
 
 #==================================================================================================#
 ## go.2011.raw
@@ -159,6 +168,10 @@ go.2011.clean$evCodeType[go.2011.clean$evCode %in% c("ISS")] <- "COMP"
 ## Remove duplicates
 go.2011.clean <- distinct(go.2011.clean)
 
+## There was no qualifier or with columns for this dataset, but initiallize the empty anyway
+go.2011.clean$qualifier <- NA
+go.2011.clean$with <- NA
+
 #==================================================================================================#
 ## go.uniprot.raw
 #--------------------------------------------------------------------------------------------------#
@@ -168,8 +181,8 @@ go.uniprot.clean <- go.uniprot.raw
 go.uniprot.clean <-
   go.uniprot.clean %>%
   subset(!startsWith(QUALIFIER, "NOT")) %>%
-  rename(geneID = `GENE PRODUCT ID`, goTerm = `GO TERM`, publication = REFERENCE, evCode = `GO EVIDENCE CODE`, curator = `ASSIGNED BY`) %>%
-  select(geneID, goTerm, publication, evCode, curator)
+  rename(geneID = `GENE PRODUCT ID`, goTerm = `GO TERM`, publication = REFERENCE, evCode = `GO EVIDENCE CODE`, curator = `ASSIGNED BY`, qualifier=`QUALIFIER`, with=`WITH/FROM`) %>%
+  select(geneID, goTerm, publication, evCode, curator, qualifier, with)
 
 ## Clean non-standard publication data
 go.uniprot.clean$publication[startsWith(go.uniprot.clean$publication, "GO_REF")] <- NA
@@ -195,6 +208,11 @@ go.uniprot.clean <- go.uniprot.clean[!go.uniprot.clean$evCode %in% c("ND"),] #no
 ## Remove duplicates
 go.uniprot.clean <- distinct(go.uniprot.clean)
 
+## Reorder columns
+go.uniprot.clean <-
+  go.uniprot.clean %>%
+  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with)
+
 #==================================================================================================#
 ## go.student.brittney.raw
 ## go.student.miranda.raw.1
@@ -209,8 +227,9 @@ go.student.brittney.clean <- go.student.brittney.raw
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
   rename(geneID = `Gene Model`, gene = `Canonical Gene`, goTerm = `better GO`, publication = PMID, evCode = `e code`) %>%
-  rename_at( 11, ~"withGene" ) %>%
-  select(geneID, gene, goTerm, publication, evCode, withGene)
+  rename_at( 10, ~"qualifier" ) %>%
+  rename_at( 11, ~"with" ) %>%
+  select(geneID, gene, goTerm, publication, evCode, qualifier, with)
 
 ## Clean non-standard "NA's" from data in geneID and other typos
 go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("None", "none", "noe")] <- NA
@@ -256,8 +275,9 @@ go.student.brittney.clean$evCode[is.na(go.student.brittney.clean$evCode)] <- "CO
 ## Select columns and remove duplicates
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
-  select(geneID, goTerm, publication, evCode, curator) %>%
+  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with) %>%
   distinct() # no duplicates expected
+
 
 #--#    #--#    #--#    #--#    #--#    #--#    #--#    #--#    #--#    #--#
 go.student.miranda.raw <- go.student.miranda.raw.1
@@ -265,8 +285,8 @@ go.student.miranda.raw <- go.student.miranda.raw.1
 ## This data is on 5 sheets that are not consistently formatted
 go.student.miranda.raw <-
   go.student.miranda.raw.1 %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`) %>%
-  select(geneID, goTerm, publication, evCode) %>%
+  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`, qualifier = `Qualifier Column (NOT, colocalizes with, contributes to)`) %>%
+  select(geneID, goTerm, publication, evCode, qualifier) %>%
   subset(!is.na(geneID) & !startsWith(geneID, "*none") & !startsWith(geneID, "no associated") & !is.na(goTerm))
 
 go.student.miranda.clean <- go.student.miranda.raw
@@ -274,8 +294,8 @@ go.student.miranda.clean <- go.student.miranda.raw
 ## Add Sheet 2
 go.student.miranda.raw <-
   go.student.miranda.raw.2 %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`) %>%
-  select(geneID, goTerm, publication, evCode) %>%
+  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`, qualifier = `WITH`) %>%
+  select(geneID, goTerm, publication, evCode, qualifier) %>%
   subset(!is.na(geneID) & !startsWith(geneID, "*none") & !startsWith(geneID, "no associated") & !is.na(goTerm))
 
 go.student.miranda.clean <-
@@ -285,8 +305,8 @@ go.student.miranda.clean <-
 ## Sheet 3
 go.student.miranda.raw <-
   go.student.miranda.raw.3 %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`) %>%
-  select(geneID, goTerm, publication, evCode) %>%
+  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`, qualifier = `With [IGI, IPI requires' others optional]`) %>%
+  select(geneID, goTerm, publication, evCode, qualifier) %>%
   subset(!is.na(geneID) & !startsWith(geneID, "*none") & !startsWith(geneID, "no associated") & !is.na(goTerm))
 
 go.student.miranda.clean <-
@@ -296,8 +316,8 @@ go.student.miranda.clean <-
 ## Sheet 4 - no gene name in paper column
 go.student.miranda.raw <-
   go.student.miranda.raw.4 %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`) %>%
-  select(geneID, goTerm, publication, evCode) %>%
+  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`, qualifier = `With`) %>%
+  select(geneID, goTerm, publication, evCode, qualifier) %>%
   subset(!is.na(geneID) & !startsWith(geneID, "*none") & !startsWith(geneID, "no associated") & !is.na(goTerm))
 
 go.student.miranda.clean <-
@@ -307,8 +327,8 @@ go.student.miranda.clean <-
 ## Sheet 5
 go.student.miranda.raw <-
   go.student.miranda.raw.5 %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`) %>%
-  select(geneID, goTerm, publication, evCode) %>%
+  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`, qualifier = `With`) %>%
+  select(geneID, goTerm, publication, evCode, qualifier) %>%
   subset(!is.na(geneID) & !startsWith(geneID, "*none") & !startsWith(geneID, "no associated") & !is.na(goTerm))
 
 go.student.miranda.clean <-
@@ -316,6 +336,7 @@ go.student.miranda.clean <-
   bind_rows(go.student.miranda.raw)
 
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
+go.student.miranda.clean$with <- go.student.miranda.clean$qualifier
 go.student.miranda.clean$curator <- NA
 go.student.miranda.clean$geneID <- gsub("\\*", "", go.student.miranda.clean$geneID)
 go.student.miranda.clean$evCode <- gsub("ida", "IDA", go.student.miranda.clean$evCode)
@@ -352,6 +373,22 @@ go.student.miranda.clean$publication[startsWith(go.student.miranda.clean$publica
 go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)] <-
   paste0("PMID:", go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)])
 
+## Simplify evidence codes, assume missing is computationally derived and throw out "ND" (no data) statements
+go.student.miranda.clean$evCodeType <- ""
+go.student.miranda.clean$evCodeType[is.na(go.student.miranda.clean$evCode)] <- "COMP"
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IMP")] <- "EXP"
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IDA")] <- "EXP"
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IGI")] <- "EXP"
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("TAS")] <- "EXP" #trust author statements
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("NAS")] <- "EXP" #trust author statements
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IC")] <- "EXP" #trust curator statements
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IEP")] <- "EXP"
+go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IPI")] <- "EXP"
+
+## Reorder columns
+go.student.miranda.clean <-
+  go.student.miranda.clean %>%
+  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with)
 
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)
