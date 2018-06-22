@@ -107,6 +107,10 @@ go.gold.clean$evCode <- gsub("imp", "IMP", go.gold.clean$evCode)
 go.gold.clean$geneID[go.gold.clean$geneID %in% c("PyrR")] <- "GRMZM2G090068" #assume PyrR = pyrr1
 go.gold.clean <- subset(go.gold.clean, !grepl("ga-ms1", geneID)) #drop gams1, not associated with any gene model
 
+## There are a couple v2 id's here that are not equivalent to a v3 id... manually fix them here
+go.gold.clean$geneID[go.gold.clean$geneID %in% c("AC147602.5_FG004")] <- "GRMZM6G741210" # renamed gene model
+go.gold.clean$geneID[go.gold.clean$geneID %in% c("GRMZM2G103315")] <- "GRMZM2G000964" # gene model merged into other gene model
+
 ## Simplify evidence codes, assume missing is computationally derived.
 go.gold.clean$evCodeType <- ""
 go.gold.clean$evCodeType[is.na(go.gold.clean$evCode)] <- "COMP"

@@ -32,20 +32,21 @@ MaizeGO <-
   bind_rows(go.student.miranda.clean) %>%
   bind_rows(go.uniprot.clean)
 
-## Simplify EV Codes based on uniprot definitions
-MaizeGO$evCode[MaizeGO$evCode == "IDA"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "IPI"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "IMP"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "IGI"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "IEP"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "TAS"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "NAS"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "IC"] <- "EXP"
-MaizeGO$evCode[MaizeGO$evCode == "ND"] <- "EXP"
-MaizeGO$evCode[is.na(MaizeGO$evCode)] <- "COMP"
-MaizeGO$evCode[MaizeGO$evCode == "ISS"] <- "COMP"
-MaizeGO$evCode[MaizeGO$evCode == "ISM"] <- "COMP"
-MaizeGO$evCode[MaizeGO$evCode == "RCA"] <- "COMP"
+## Simplify EV Codes based on uniprot definitions - this simplified ev code is in its own column now
+# MaizeGO$evCodeType <- ""
+# MaizeGO$evCodeType[MaizeGO$evCode == "IDA"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "IPI"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "IMP"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "IGI"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "IEP"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "TAS"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "NAS"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "IC"] <- "EXP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "ND"] <- "EXP"
+# MaizeGO$evCodeType[is.na(MaizeGO$evCode)] <- "COMP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "ISS"] <- "COMP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "ISM"] <- "COMP"
+# MaizeGO$evCodeType[MaizeGO$evCode == "RCA"] <- "COMP"
 
 ## Add type.  GO Terms are either CC, BP, or MF.  Terms without a type, type is set to NA
 MaizeGO$type <- ""
@@ -58,6 +59,32 @@ MaizeGO$type[MaizeGO$type == ""] <- NA
 MaizeGO.B73.Uniprot <- subset(MaizeGO, source %in% "UniProt")
 MaizeGO.B73.v3 <- subset(MaizeGO, !startsWith(geneID, "Zm") & !source %in% "UniProt")
 MaizeGO.B73.v4 <- subset(MaizeGO, startsWith(geneID, "Zm"))
+
+# ## There is a very likely possibility that one of the annotations assumed to be in v3 was actually from v1 or v2. No way to blanket
+# ## fix this problem, but can at least get an idea if we have any problems by checking against a short list of gene models known
+# ## to have changed between v2 and v3.  This is here as a check, but won't fix the problem if there is one.
+# MaizeGO.B73.v3 %>%
+#   subset(geneID %in% c(
+#     "AC147602.5_FG004",
+#     "AC190882.3_FG003",
+#     "AC192244.3_FG001",
+#     "AC194389.3_FG001",
+#     "AC204604.3_FG008",
+#     "AC210529.3_FG004",
+#     "AC232289.2_FG005",
+#     "AC233893.1_FG001",
+#     "AC233910.1_FG005",
+#     "AC235534.1_FG001",
+#     "GRMZM2G103315",
+#     "GRMZM2G452386",
+#     "GRMZM2G518717",
+#     "GRMZM2G020429",
+#     "GRMZM2G439578",
+#     "GRMZM2G117517",
+#     "GRMZM5G864178",
+#     "GRMZM2G143862",
+#     "GRMZM5G823855"
+#   ))
 
 ## Save the output to /data
 devtools::use_data(MaizeGO.B73.v3, overwrite = TRUE)
