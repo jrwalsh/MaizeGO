@@ -39,12 +39,17 @@ go.maize.clean <- go.maizecyc.raw
 go.maize.clean <-
   go.maize.clean %>%
   rename(geneID = `MaizeCyc2.2 Accession-1`) %>%
+  rename(gene = `MaizeCyc2.2 CommonName`) %>%
   rename(goTerm = `GO Term`)
+
+## Parse out gene names from gene model names
+go.maize.clean$gene[startsWith(go.maize.clean$gene, "GRMZM") | startsWith(go.maize.clean$gene, "AC") | startsWith(go.maize.clean$gene, "AF4") | startsWith(go.maize.clean$gene, "AY5") | startsWith(go.maize.clean$gene, "AF5") | startsWith(go.maize.clean$gene, "EF5")] <- NA
+go.maize.clean$gene[go.maize.clean$gene %in% c("chlorophyll synthetase", "geranylgeranyl hydrogenase", "3-hydroxypropionate dehydrogenase")] <- NA
 
 ## Parse out citation string and select important columns
 go.maize.clean <-
   go.maize.clean %>%
-  select(geneID, goTerm, Citation) %>%
+  select(geneID, gene, goTerm, Citation) %>%
   separate(Citation, c("publication", "evCode","timeStamp","curator"), sep=":", extra="drop")
 
 ## Add alt_publication for consistency with other datasets
@@ -76,7 +81,7 @@ go.maize.clean$goTerm <- gsub(go.maize.clean$goTerm, pattern = "\\|", replacemen
 ## Remove duplicates and drop timestamp
 go.maize.clean <-
   go.maize.clean %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType) %>%
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, curator, evCodeType) %>%
   distinct(go.maize.clean)
 
 ## There was no qualifier or with columns for this dataset, but initiallize the empty anyway
@@ -91,8 +96,11 @@ go.gold.clean <- go.gold.raw
 ## Rename columns and select important columns
 go.gold.clean <-
   go.gold.clean %>%
-  rename(geneID = db_object_symbol, goTerm = term_accession, publication = db_reference, evCode = evidence_code, curator = assigned_by) %>%
-  select(geneID, goTerm, publication, evCode, curator, qualifier, with)
+  rename(geneID = db_object_symbol, gene = db_object_id, goTerm = term_accession, publication = db_reference, evCode = evidence_code, curator = assigned_by) %>%
+  select(geneID, gene, goTerm, publication, evCode, curator, qualifier, with)
+
+## Parse out gene names from gene model names
+go.gold.clean$gene[startsWith(go.gold.clean$gene, "GRMZM") | startsWith(go.gold.clean$gene, "AC")] <- NA
 
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
 go.gold.clean$evCode <- gsub("IEF", NA, go.gold.clean$evCode)
@@ -125,7 +133,7 @@ go.gold.clean <- distinct(go.gold.clean)
 ## Reorder columns
 go.gold.clean <-
   go.gold.clean %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
 
 #==================================================================================================#
 ## go.2011.raw
@@ -144,8 +152,8 @@ go.2011.clean$alt_publication <- NA
 ## Rename columns and select important columns
 go.2011.clean <-
   go.2011.clean %>%
-  rename(geneID = X5, goTerm = X1, publication = X7, evCode = X9, curator = X8) %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, curator)
+  rename(geneID = X5, gene = X4, goTerm = X1, publication = X7, evCode = X9, curator = X8) %>%
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, curator)
 
 ## Remove PO terms
 go.2011.clean <-
@@ -193,10 +201,13 @@ go.uniprot.clean <- go.uniprot.clean[!go.uniprot.clean$evCode %in% c("ND"),] #no
 ## Remove duplicates
 go.uniprot.clean <- distinct(go.uniprot.clean)
 
+## Initialize an empty gene column
+go.uniprot.clean$gene <- NA
+
 ## Reorder columns
 go.uniprot.clean <-
   go.uniprot.clean %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
 
 #==================================================================================================#
 ## go.student.brittney.raw
@@ -253,7 +264,7 @@ go.student.brittney.clean$evCode[is.na(go.student.brittney.clean$evCode)] <- "CO
 ## Select columns and remove duplicates
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with) %>%
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with) %>%
   distinct() # no duplicates expected
 
 #==================================================================================================#
@@ -264,8 +275,8 @@ go.student.miranda.clean <- go.student.miranda.raw
 ## Rename columns
 go.student.miranda.clean <-
   go.student.miranda.clean %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, alt_publication = `MaizeGDB_Reference`, evCode = `Experiment Code`, qualifier = `Qualifier`, with = `With`) %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, qualifier, with) %>%
+  rename(geneID = `Gene Model`, gene = `Canonical Gene Name`, goTerm = `GO ID`, publication = PMID, alt_publication = `MaizeGDB_Reference`, evCode = `Experiment Code`, qualifier = `Qualifier`, with = `With`) %>%
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, qualifier, with) %>%
   subset(!is.na(geneID) & !is.na(goTerm))
 
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
@@ -285,7 +296,7 @@ go.student.miranda.clean$evCodeType <- NA
 ## Reorder columns
 go.student.miranda.clean <-
   go.student.miranda.clean %>%
-  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
+  select(geneID, gene, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
 
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)
