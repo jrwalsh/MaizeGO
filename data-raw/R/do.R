@@ -32,21 +32,10 @@ MaizeGO <-
   bind_rows(go.student.miranda.clean) %>%
   bind_rows(go.uniprot.clean)
 
-## Simplify EV Codes based on uniprot definitions - this simplified ev code is in its own column now
-# MaizeGO$evCodeType <- ""
-# MaizeGO$evCodeType[MaizeGO$evCode == "IDA"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "IPI"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "IMP"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "IGI"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "IEP"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "TAS"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "NAS"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "IC"] <- "EXP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "ND"] <- "EXP"
-# MaizeGO$evCodeType[is.na(MaizeGO$evCode)] <- "COMP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "ISS"] <- "COMP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "ISM"] <- "COMP"
-# MaizeGO$evCodeType[MaizeGO$evCode == "RCA"] <- "COMP"
+## Simplify EV Codes into experimental or computational
+MaizeGO$evCodeType[MaizeGO$evCode %in% c("EXP", "AS", "IDA", "IPI", "IMP", "IGI", "IEP", "TAS", "NAS", "IC", "ND")] <- "EXP" #trust author/curator statements
+MaizeGO$evCodeType[is.na(MaizeGO$evCode)] <- "COMP"
+MaizeGO$evCodeType[MaizeGO$evCode %in% c("", "COMP", "HINF-SEQ-ORTHOLOGY", "AINF-SEQ-ORTHOLOGY", "IBA", "ISS", "ISM", "RCA")] <- "COMP"
 
 ## Add type.  GO Terms are either CC, BP, or MF.  Terms without a type, type is set to NA
 MaizeGO$type <- ""
