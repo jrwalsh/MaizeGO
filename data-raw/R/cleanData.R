@@ -47,6 +47,9 @@ go.maize.clean <-
   select(geneID, goTerm, Citation) %>%
   separate(Citation, c("publication", "evCode","timeStamp","curator"), sep=":", extra="drop")
 
+## Add alt_publication for consistency with other datasets
+go.maize.clean$alt_publication <- NA
+
 ## Publication is uncommon, replace blanks with NA's, add PMID: to front of pubmed id
 go.maize.clean$publication[go.maize.clean$publication == ""] <- NA
 go.maize.clean$publication[!is.na(go.maize.clean$publication)] <- paste0("PMID:", go.maize.clean$publication[!is.na(go.maize.clean$publication)])
@@ -79,7 +82,7 @@ go.maize.clean$goTerm <- gsub(go.maize.clean$goTerm, pattern = "\\|", replacemen
 ## Remove duplicates and drop timestamp
 go.maize.clean <-
   go.maize.clean %>%
-  select(geneID, goTerm, publication, evCode, curator, evCodeType) %>%
+  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType) %>%
   distinct(go.maize.clean)
 
 ## There was no qualifier or with columns for this dataset, but initiallize the empty anyway
@@ -118,9 +121,16 @@ go.gold.clean$evCodeType[go.gold.clean$evCode %in% c("IEP")] <- "EXP"
 
 go.gold.clean$evCode[is.na(go.gold.clean$evCode)] <- "COMP"
 
-## Clean up publication column
-go.gold.clean$publication <- gsub("MGDB_REF:3133112\\|","",go.gold.clean$publication)
-go.gold.clean$publication[startsWith(go.gold.clean$publication, "Maize")] <- NA
+## The MGDB publication should be kept, but in a separate column
+go.gold.clean$alt_publication <- NA
+go.gold.clean$alt_publication[go.gold.clean$publication %in% c("MGDB_REF:3133112|PMID:23198870")] <- "MGDB:3133112"
+go.gold.clean$alt_publication[go.gold.clean$publication %in% c("MaizeGDB:123623")] <- "MGDB:123623"
+go.gold.clean$alt_publication[go.gold.clean$publication %in% c("MaizeGDB:5888790")] <- "MGDB:5888790"
+
+## Clean publication column
+go.gold.clean$publication[go.gold.clean$publication %in% c("MGDB_REF:3133112|PMID:23198870")] <- "PMID:23198870"
+go.gold.clean$publication[go.gold.clean$publication %in% c("MaizeGDB:123623")] <- ""
+go.gold.clean$publication[go.gold.clean$publication %in% c("MaizeGDB:5888790")] <- ""
 
 ## Remove duplicates
 go.gold.clean <- distinct(go.gold.clean)
@@ -128,7 +138,7 @@ go.gold.clean <- distinct(go.gold.clean)
 ## Reorder columns
 go.gold.clean <-
   go.gold.clean %>%
-  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with)
+  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
 
 #==================================================================================================#
 ## go.2011.raw
@@ -141,11 +151,14 @@ go.2011.clean$X5[go.2011.clean$X4 %in% c("id1")] <- "GRMZM2G011357"
 go.2011.clean$X5[go.2011.clean$X4 %in% c("fl2")] <- "GRMZM2G397687"
 go.2011.clean$X5[go.2011.clean$X4 %in% c("ao3")] <- "GRMZM2G019799"
 
+## Add alt_publication for consistency with other datasets
+go.2011.clean$alt_publication <- NA
+
 ## Rename columns and select important columns
 go.2011.clean <-
   go.2011.clean %>%
   rename(geneID = X5, goTerm = X1, publication = X7, evCode = X9, curator = X8) %>%
-  select(geneID, goTerm, publication, evCode, curator)
+  select(geneID, goTerm, publication, alt_publication, evCode, curator)
 
 ## Remove PO terms
 go.2011.clean <-
@@ -185,6 +198,10 @@ go.uniprot.clean <-
   select(geneID, goTerm, publication, evCode, curator, qualifier, with)
 
 ## Clean non-standard publication data
+go.uniprot.clean$alt_publication <- NA
+go.uniprot.clean$alt_publication[grepl("DOI:", go.uniprot.clean$publication)] <- go.uniprot.clean$publication[grepl("DOI:", go.uniprot.clean$publication)]
+go.uniprot.clean$alt_publication[grepl("GO_REF", go.uniprot.clean$publication)] <- go.uniprot.clean$publication[grepl("GO_REF", go.uniprot.clean$publication)]
+go.uniprot.clean$publication[grepl("DOI:", go.uniprot.clean$publication)] <- NA
 go.uniprot.clean$publication[startsWith(go.uniprot.clean$publication, "GO_REF")] <- NA
 
 ## Simplify evidence codes, assume missing is computationally derived and throw out "ND" (no data) statements
@@ -211,7 +228,7 @@ go.uniprot.clean <- distinct(go.uniprot.clean)
 ## Reorder columns
 go.uniprot.clean <-
   go.uniprot.clean %>%
-  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with)
+  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
 
 #==================================================================================================#
 ## go.student.brittney.raw
@@ -234,7 +251,11 @@ go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GRMZM2
 go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GMZM5G870341")] <- "GRMZM2G032282"
 go.student.brittney.clean$geneID[go.student.brittney.clean$geneID %in% c("GMZM5G870340")] <- "GRMZM5G870342" # cpx1 is nec4
 go.student.brittney.clean$evCode[go.student.brittney.clean$evCode %in% c("AF360356")] <- NA
-go.student.brittney.clean$publication[go.student.brittney.clean$publication %in% c("MGDB: 514917")] <- "11708651"
+
+## The MGDB publication should be kept, but in a separate column
+go.student.brittney.clean$alt_publication <- NA
+go.student.brittney.clean$alt_publication[go.student.brittney.clean$publication %in% c("MGDB: 514917")] <- "MGDB:514917"
+go.student.brittney.clean$publication[go.student.brittney.clean$publication %in% c("MGDB: 514917")] <- "11708651" # don't add "PMID" to id here, we add it to all of them a few lines below here
 
 ## Hard-coded fix for missing geneID but present gene.  Manually resolve to a geneID
 go.student.brittney.clean$geneID[go.student.brittney.clean$gene %in% c("phyB1")] <- "GRMZM2G124532"
@@ -271,7 +292,7 @@ go.student.brittney.clean$evCode[is.na(go.student.brittney.clean$evCode)] <- "CO
 ## Select columns and remove duplicates
 go.student.brittney.clean <-
   go.student.brittney.clean %>%
-  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with) %>%
+  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with) %>%
   distinct() # no duplicates expected
 
 
@@ -281,8 +302,8 @@ go.student.miranda.clean <- go.student.miranda.raw
 ## Rename columns
 go.student.miranda.clean <-
   go.student.miranda.clean %>%
-  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, evCode = `Experiment Code`, qualifier = `Qualifier`, with = `With`) %>%
-  select(geneID, goTerm, publication, evCode, qualifier, with) %>%
+  rename(geneID = `Gene Model`, goTerm = `GO ID`, publication = PMID, alt_publication = `MaizeGDB_Reference`, evCode = `Experiment Code`, qualifier = `Qualifier`, with = `With`) %>%
+  select(geneID, goTerm, publication, alt_publication, evCode, qualifier, with) %>%
   subset(!is.na(geneID) & !is.na(goTerm))
 
 ## Clean up random characters, non data, comments, errors, and statements made with uncertain language
@@ -291,6 +312,10 @@ go.student.miranda.clean$curator <- NA
 ## Add PMID: to front of pubmed id
 go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)] <-
   paste0("PMID:", go.student.miranda.clean$publication[!is.na(go.student.miranda.clean$publication)])
+
+## Add MGDB: to front of alt_publication
+go.student.miranda.clean$alt_publication[!is.na(go.student.miranda.clean$alt_publication)] <-
+  paste0("MGDB:", go.student.miranda.clean$alt_publication[!is.na(go.student.miranda.clean$alt_publication)])
 
 ## Simplify evidence codes, assume missing is computationally derived and throw out "ND" (no data) statements
 go.student.miranda.clean$evCodeType <- ""
@@ -307,7 +332,7 @@ go.student.miranda.clean$evCodeType[go.student.miranda.clean$evCode %in% c("IPI"
 ## Reorder columns
 go.student.miranda.clean <-
   go.student.miranda.clean %>%
-  select(geneID, goTerm, publication, evCode, curator, evCodeType, qualifier, with)
+  select(geneID, goTerm, publication, alt_publication, evCode, curator, evCodeType, qualifier, with)
 
 #--------------------------------------------------------------------------------------------------#
 detach("package:tidyr", unload=TRUE)
