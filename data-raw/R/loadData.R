@@ -31,7 +31,7 @@ go.2011.raw <- read_csv("./data-raw/OBO_terms_since_2011.txt", col_names = FALSE
 ## Read in GO Annotation data from QuickGO / UniProt
 go.uniprot.raw <- read_delim("./data-raw/QuickGO-annotations-1508951884113-20171025.tsv", "\t", escape_double = FALSE, trim_ws = TRUE)
 
-## Read in GO Annotation data from MaizeCyc 2.2
+## Read in GO Annotation data from student curators
 go.student.brittney.raw <- read_excel("./data-raw/Curation Spreadsheet - Brittney Dunfee_MS.xlsx", sheet = "Sheet1")
 go.student.miranda.raw <- read_excel("./data-raw/Summary Table_JW.xlsx", sheet = "Sheet1")
 
