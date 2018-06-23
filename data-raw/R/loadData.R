@@ -8,11 +8,7 @@
 ##        go.2011.raw
 ##        go.uniprot.raw
 ##        go.student.brittney.raw
-##        go.student.miranda.raw.1
-##        go.student.miranda.raw.2
-##        go.student.miranda.raw.3
-##        go.student.miranda.raw.4
-##        go.student.miranda.raw.5
+##        go.student.miranda.raw
 ##        maize.genes.v3_to_v4_map.raw
 ##
 ## Date: 2017-12-11
@@ -37,15 +33,7 @@ go.uniprot.raw <- read_delim("./data-raw/QuickGO-annotations-1508951884113-20171
 
 ## Read in GO Annotation data from MaizeCyc 2.2
 go.student.brittney.raw <- read_excel("./data-raw/Curation Spreadsheet - Brittney Dunfee_MS.xlsx", sheet = "Sheet1")
-go.student.miranda.raw.1 <- read_excel("./data-raw/Summary Table.xlsx", sheet = "ML, Barkan")
-go.student.miranda.raw.2 <- read_excel("./data-raw/Summary Table.xlsx",
-      sheet = "EdBoard", col_types = c("text", "numeric", "text", "text", "text", "text", "text", "text", "text", "text",
-                                       "text", "text", "text", "text", "text", "text", "numeric"))
-go.student.miranda.raw.3 <- read_excel("./data-raw/Summary Table.xlsx", sheet = "Sep-Nov", skip = 1)
-go.student.miranda.raw.4 <- read_excel("./data-raw/Summary Table.xlsx",
-      sheet = "Dec", col_types = c("text", "text", "text", "text", "text", "text", "text", "text", "text", "text", "text",
-                                   "text", "text", "text", "text"))
-go.student.miranda.raw.5 <- read_excel("./data-raw/Summary Table.xlsx", sheet = "Jan15")
+go.student.miranda.raw <- read_excel("./data-raw/Summary Table_JW.xlsx", sheet = "Sheet1")
 
 #--------------------------------------------------------------------------------------------------#
 detach("package:readr", unload=TRUE)
