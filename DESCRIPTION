@@ -1,12 +1,12 @@
 Package: MaizeGO
 Type: Package
 Title: Container for Maize GO Annotation Data
-Version: 0.2.0
+Version: 0.2.1
 Author: Jesse R. Walsh
 Maintainer: Jesse R. Walsh <jesse@iastate.edu>
 Description: This is a collection of manually curated GO annotations for maize.  They have been
 	pulled from various sources, cleaned, and merged here.  This package uses readr, readxl, tidyr, and dplyr.
-License: LGPL
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
